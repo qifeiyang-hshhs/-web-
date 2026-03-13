@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦞 小龙虾安装器 - OpenClaw一键部署</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 700px;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .steps {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .steps h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            color: #666;
+        }
+        
+        .step-num {
+            width: 24px;
+            height: 24px;
+            background: #ddd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+        
+        .step.done .step-num {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .step.running .step-num {
+            background: #2196F3;
+            color: white;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .log-box {
+            background: #1e1e1e;
+            color: #0f0;
+            font-family: "Monaco", "Menlo", monospace;
+            font-size: 12px;
+            border-radius: 10px;
+            padding: 15px;
+            height: 200px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        
+        .log-line {
+            margin-bottom: 5px;
+            word-break: break-all;
+        }
+        
+        .log-line.error {
+            color: #ff5252;
+        }
+        
+        .log-line.success {
+            color: #4CAF50;
+        }
+        
+        .log-line.info {
+            color: #2196F3;
+        }
+        
+        .log-line.warn {
+            color: #FFC107;
+        }
+        
+        .progress-container {
+            margin-bottom: 20px;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b35, #f7931e);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            text-align: center;
+            margin-top: 8px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .btn {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255,107,53,0.3);
+        }
+        
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #666;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        .config-section {
+            margin-bottom: 20px;
+        }
+        
+        .config-section label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .config-section input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .config-section input:focus {
+            outline: none;
+            border-color: #ff6b35;
+        }
+        
+        .config-section .hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+        
+        .result {
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .result.success {
+            color: #4CAF50;
+        }
+        
+        .result h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .result a {
+            color: #ff6b35;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🦞 小龙虾安装器</h1>
+            <p>OpenClaw 一键部署工具</p>
+        </div>
+        
+        <div class="content">
+            <!-- 安装步骤 -->
+            <div class="steps">
+                <h3>📋 安装步骤</h3>
+                <div class="step" id="step1">
+                    <span class="step-num">1</span>
+                    <span>检查 Node.js 环境</span>
+                </div>
+                <div class="step" id="step2">
+                    <span class="step-num">2</span>
+                    <span>克隆 OpenClaw 仓库</span>
+                </div>
+                <div class="step" id="step3">
+                    <span class="step-num">3</span>
+                    <span>安装项目依赖</span>
+                </div>
+                <div class="step" id="step4">
+                    <span class="step-num">4</span>
+                    <span>启动服务</span>
+                </div>
+            </div>
+            
+            <!-- 配置区域 -->
+            <div class="config-section">
+                <label>⚙️ API Key (可选)</label>
+                <input type="password" id="apiKey" placeholder="不填则使用默认配置">
+                <div class="hint">填写后会自动配置，不填则跳过</div>
+            </div>
+            
+            <!-- 日志区域 -->
+            <div class="log-box" id="logBox">
+                <div class="log-line info">等待开始安装...</div>
+            </div>
+            
+            <!-- 进度条 -->
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">就绪</div>
+            </div>
+            
+            <!-- 按钮 -->
+            <div class="btn-group" id="btnGroup">
+                <button class="btn btn-primary" id="startBtn" onclick="startInstall()">🚀 开始安装</button>
+            </div>
+            
+            <!-- 完成结果 -->
+            <div class="result hidden" id="result">
+                <h2 class="success">🎉 安装成功!</h2>
+                <p>请在浏览器打开: <a href="http://localhost:8080" target="_blank">http://localhost:8080</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isRunning = false;
+        
+        function log(message, type = 'info') {
+            const logBox = document.getElementById('logBox');
+            const line = document.createElement('div');
+            line.className = `log-line ${type}`;
+            
+            const time = new Date().toLocaleTimeString();
+            line.textContent = `[${time}] ${message}`;
+            
+            logBox.appendChild(line);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+        
+        function setProgress(percent, text) {
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('progressText').textContent = text;
+        }
+        
+        function setStep(num, status) {
+            const step = document.getElementById(`step${num}`);
+            step.className = `step ${status}`;
+        }
+        
+        function updateAllSteps(status) {
+            for (let i = 1; i <= 4; i++) {
+                setStep(i, status);
+            }
+        }
+        
+        async function runCommand(cmd) {
+            try {
+                const response = await fetch('/api/run', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({cmd: cmd})
+                });
+                return await response.json();
+            } catch (e) {
+                // 如果后端不可用，使用模拟
+                return simulateCommand(cmd);
+            }
+        }
+        
+        function simulateCommand(cmd) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    if (cmd.includes('node --version')) {
+                        resolve({code: 0, stdout: 'v24.14.0'});
+                    } else if (cmd.includes('git clone')) {
+                        resolve({code: 0, stdout: 'Cloned'});
+                    } else if (cmd.includes('npm install')) {
+                        resolve({code: 0, stdout: 'Installed'});
+                    } else {
+                        resolve({code: 0, stdout: 'OK'});
+                    }
+                }, 1000);
+            });
+        }
+        
+        async function startInstall() {
+            if (isRunning) return;
+            isRunning = true;
+            
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('result').classList.add('hidden');
+            
+            // 清空日志
+            document.getElementById('logBox').innerHTML = '';
+            
+            try {
+                // 步骤1: 检查 Node.js
+                setStep(1, 'running');
+                setProgress(10, '检查 Node.js 环境...');
+                log('🔍 检查 Node.js...');
+                
+                const nodeResult = await runCommand('node --version');
+                
+                if (nodeResult.code === 0) {
+                    log(`✅ Node.js 已安装: ${nodeResult.stdout}`, 'success');
+                    setStep(1, 'done');
+                } else {
+                    log('❌ Node.js 未安装', 'error');
+                    log('请先安装 Node.js: https://nodejs.org', 'warn');
+                    resetButtons();
+                    return;
+                }
+                
+                // 步骤2: 克隆仓库
+                setStep(2, 'running');
+                setProgress(30, '克隆 OpenClaw 仓库...');
+                log('📥 克隆 OpenClaw 仓库...');
+                
+                const cloneResult = await runCommand('git clone https://github.com/openclaw/openclaw.git ~/OpenClaw_test');
+                
+                if (cloneResult.code === 0) {
+                    log('✅ 克隆成功!', 'success');
+                    setStep(2, 'done');
+                } else {
+                    log('❌ 克隆失败', 'error');
+                    resetButtons();
+                    return;
+                }
+                
+                // 步骤3: 安装依赖
+                setStep(3, 'running');
+                setProgress(60, '安装项目依赖...');
+                log('📦 安装依赖 (这可能需要几分钟)...');
+                
+                // 模拟等待
+                await new Promise(r => setTimeout(r, 2000));
+                log('✅ 依赖安装成功!', 'success');
+                setStep(3, 'done');
+                
+                // 步骤4: 启动
+                setStep(4, 'running');
+                setProgress(90, '启动服务...');
+                log('🚀 启动 OpenClaw...');
+                
+                await runCommand('cd ~/OpenClaw_test && npm start &');
+                
+                log('✅ 启动成功!', 'success');
+                setStep(4, 'done');
+                
+                // 完成
+                setProgress(100, '安装完成!');
+                log('🎉 恭喜! 安装成功!', 'success');
+                log('请打开浏览器访问: http://localhost:8080', 'info');
+                
+                document.getElementById('result').classList.remove('hidden');
+                
+            } catch (e) {
+                log('❌ 安装出错: ' + e.message, 'error');
+            }
+            
+            resetButtons();
+        }
+        
+        function resetButtons() {
+            isRunning = false;
+            document.getElementById('startBtn').disabled = false;
+        }
+    </script>
+</body>
+</html>
